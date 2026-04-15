@@ -1,4 +1,7 @@
+from multiprocessing import context
+
 from django.shortcuts import render
+from django.http import HttpResponse
 
 DATA = {
     'omlet': {
@@ -28,3 +31,19 @@ DATA = {
 #     'ингредиент2': количество2,
 #   }
 # }
+
+def start_page(request):
+    dishes = ', '.join(DATA.keys())
+    return HttpResponse(f'Привет, доступные рецепты: {dishes}')
+
+
+def recipe_view(request, dish):
+    context = {
+        'recipe': {}
+        }
+    count_dishes = int(request.GET.get('servings', 1))
+    ingredients = DATA[dish]
+    for key, value in ingredients.items():
+        context['recipe'][key] = value * count_dishes
+    
+    return render(request, 'calculator/index.html', context)
