@@ -2,7 +2,6 @@ import csv
 
 from django.core.management.base import BaseCommand
 from phones.models import Phone
-from django.utils.text import slugify
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -19,13 +18,13 @@ class Command(BaseCommand):
             price = int(phone['price'])
             release_date = phone['release_date']
             lte_exists = phone['lte_exists'] == 'True'
-            slug = slugify(phone['name'])
-            p = Phone.objects.create(
+            Phone.objects.update_or_create(
                 id=id,
-                name=name,
-                image=image,
-                price=price,
-                release_date=release_date,
-                lte_exists=lte_exists,
-                slug=slug
+                defaults= {
+                    'name': name,
+                    'image': image,
+                    'price': price,
+                    'release_date': release_date,
+                    'lte_exists': lte_exists,
+                    }                
             )
