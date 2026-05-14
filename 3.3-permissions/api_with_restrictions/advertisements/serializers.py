@@ -3,14 +3,20 @@ from rest_framework import serializers
 
 from advertisements.models import Advertisement
 
+from .models import Advertisement, AdvertisementStatusChoices
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer для пользователя."""
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name',
-                  'last_name',)
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+        )
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):
@@ -22,8 +28,14 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Advertisement
-        fields = ('id', 'title', 'description', 'creator',
-                  'status', 'created_at', )
+        fields = (
+            "id",
+            "title",
+            "description",
+            "creator",
+            "status",
+            "created_at",
+        )
 
     def create(self, validated_data):
         """Метод для создания"""
@@ -41,5 +53,15 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         """Метод для валидации. Вызывается при создании и обновлении."""
 
         # TODO: добавьте требуемую валидацию
-
+        if data.get("status", "OPEN") == "OPEN":
+            advertisements = Advertisement.objects.filter(
+                creator=self.context["request"].user, status="OPEN"
+            )
+            if self.instance:
+                advertisements = advertisements.exclude(id=self.instance.id)
+            count = advertisements.count()
+            if count >= 10:
+                raise serializers.ValidationError(
+                    "Не может быть больше 10 открытых объявлений"
+                )
         return data
